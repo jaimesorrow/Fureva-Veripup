@@ -28,3 +28,12 @@ Policy-focused Kotlin foundation for **Fureva VeriPup**, designed for Android + 
 - This repository intentionally keeps external integrations as interfaces so production providers can be swapped in later.
 - Weekly reminder orchestration, payment processor settlement specifics, and document storage are represented at policy/service layer and can be wired into mobile/API apps.
 - Use "VeriPup Verified breeders" or "verified breeders" wording in UI copy.
+
+## Credibility & Attribution
+
+This project was developed with AI-assisted co-creation focused on system architecture,
+compliance design, and enforcement logic.
+
+AI-assisted contributions supported verification workflows, documentation structure,
+and platform governance. All implementation, deployment, and operational decisions
+remain the responsibility of the project owner.
