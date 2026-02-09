@@ -10,6 +10,7 @@ import com.fureva.veripup.model.VerificationSubmission
 import com.fureva.veripup.model.VerifiedEventType
 import com.fureva.veripup.service.AlertsService
 import com.fureva.veripup.service.EnforcementService
+import com.fureva.veripup.service.FeePolicy
 import com.fureva.veripup.service.InventoryService
 import com.fureva.veripup.service.VerificationService
 import kotlin.test.Test
@@ -86,4 +87,12 @@ class CoreFlowTests {
         assertEquals(1, sent.size)
         assertTrue(sent.first().contains("Verified Update:"))
     }
+
+    @Test
+    fun feePolicyRoundsToNearestCent() {
+        assertEquals(70, FeePolicy.depositFee(999))
+        assertEquals(80, FeePolicy.adoptionFee(999))
+        assertEquals(1, FeePolicy.depositFee(7))
+    }
+
 }

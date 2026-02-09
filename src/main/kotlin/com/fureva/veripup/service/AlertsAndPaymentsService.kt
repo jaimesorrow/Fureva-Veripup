@@ -23,9 +23,16 @@ class AlertsService(private val smsGateway: SmsGateway) {
 
 object FeePolicy {
     const val subscriptionMonthlyUsd = 29.99
-    const val depositFeeRate = 0.07
-    const val adoptionFeeRate = 0.08
+    const val depositFeeBasisPoints = 700L
+    const val adoptionFeeBasisPoints = 800L
+    private const val basisPointsDenominator = 10_000L
 
-    fun depositFee(amountCents: Long): Long = (amountCents * depositFeeRate).toLong()
-    fun adoptionFee(amountCents: Long): Long = (amountCents * adoptionFeeRate).toLong()
+    fun depositFee(amountCents: Long): Long = feeFromBasisPoints(amountCents, depositFeeBasisPoints)
+    fun adoptionFee(amountCents: Long): Long = feeFromBasisPoints(amountCents, adoptionFeeBasisPoints)
+
+    private fun feeFromBasisPoints(amountCents: Long, basisPoints: Long): Long {
+        val raw = amountCents * basisPoints
+        val halfUpOffset = basisPointsDenominator / 2
+        return (raw + halfUpOffset) / basisPointsDenominator
+    }
 }
