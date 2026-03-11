@@ -10,6 +10,7 @@ Policy-focused Kotlin foundation for **Fureva VeriPup**, designed for Android + 
 - Provider interfaces for external integrations (deepfake/liveness, clinic verification, AKC verification, SMS, payments).
 - Core policy services:
   - verification gating,
+  - breeder onboarding checks (ID upload, selfie with ID, vet records, and required agreement acceptance),
   - anti-fraud inventory/deposit/adoption caps,
   - off-platform enforcement + 90-day appeal timing,
   - verified SMS alert gating and message prefixing,

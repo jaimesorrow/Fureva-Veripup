@@ -3,20 +3,23 @@ package com.fureva.veripup
 import com.fureva.veripup.integration.MockAkcVerificationProvider
 import com.fureva.veripup.integration.MockClinicVerificationProvider
 import com.fureva.veripup.integration.SmsGateway
+import com.fureva.veripup.model.BreederOnboardingSubmission
 import com.fureva.veripup.model.BreederProfile
 import com.fureva.veripup.model.LitterRecord
+import com.fureva.veripup.model.OnboardingAgreementType
 import com.fureva.veripup.model.SmsPreference
 import com.fureva.veripup.model.VerificationSubmission
 import com.fureva.veripup.model.VerifiedEventType
 import com.fureva.veripup.service.AlertsService
+import com.fureva.veripup.service.BreederOnboardingService
 import com.fureva.veripup.service.EnforcementService
 import com.fureva.veripup.service.InventoryService
 import com.fureva.veripup.service.VerificationService
+import java.time.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import java.time.Instant
 
 class CoreFlowTests {
     @Test
@@ -38,6 +41,40 @@ class CoreFlowTests {
         )
 
         assertFalse(approved)
+    }
+
+    @Test
+    fun onboardingRequiresIdentityVetRecordsAndAllAgreements() {
+        val service = BreederOnboardingService()
+        val submission = BreederOnboardingSubmission(
+            breederId = "b1",
+            governmentIdUploaded = true,
+            photoHoldingGovernmentIdUploaded = true,
+            vetRecordsUploaded = true,
+            vetRecordsCoverBreedingDogs = true,
+            acceptedAgreements = OnboardingAgreementType.entries.toSet(),
+            signedAt = Instant.parse("2026-01-01T00:00:00Z")
+        )
+
+        assertTrue(service.isReadyForVerification(submission))
+        assertTrue(service.missingRequirements(submission).isEmpty())
+    }
+
+    @Test
+    fun onboardingReturnsMissingRequirementsWhenIncomplete() {
+        val service = BreederOnboardingService()
+        val submission = BreederOnboardingSubmission(
+            breederId = "b2",
+            governmentIdUploaded = true,
+            photoHoldingGovernmentIdUploaded = false,
+            vetRecordsUploaded = false,
+            vetRecordsCoverBreedingDogs = false,
+            acceptedAgreements = setOf(OnboardingAgreementType.GOOD_BREEDING_INTENTIONS),
+            signedAt = null
+        )
+
+        assertFalse(service.isReadyForVerification(submission))
+        assertEquals(8, service.missingRequirements(submission).size)
     }
 
     @Test
