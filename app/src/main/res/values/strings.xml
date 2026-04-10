@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ReferralClock</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_calendar">Calendar</string>
+    <string name="nav_codes">Codes</string>
+    <string name="nav_referrals">Referrals</string>
+
+    <!-- Auth — Login -->
+    <string name="login_title">Sign In</string>
+    <string name="login_email_label">Email</string>
+    <string name="login_password_label">Password</string>
+    <string name="login_button">Sign In</string>
+    <string name="login_go_register">Don\'t have an account? Register</string>
+
+    <!-- Auth — Register -->
+    <string name="register_title">Create Account</string>
+    <string name="register_name_label">Full Name</string>
+    <string name="register_email_label">Email</string>
+    <string name="register_password_label">Password</string>
+    <string name="register_button">Create Account</string>
+    <string name="register_go_login">Already have an account? Sign In</string>
+
+    <!-- Profile -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_name_label">Display Name</string>
+    <string name="profile_save_button">Save Changes</string>
+    <string name="profile_sign_out">Sign Out</string>
+    <string name="profile_save_success">Profile updated successfully.</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Dashboard</string>
+    <string name="dashboard_welcome">Welcome, %1$s</string>
+    <string name="dashboard_loyalty_credits">%1$d loyalty credits</string>
+    <string name="dashboard_stats_title">Your Stats</string>
+    <string name="dashboard_stat_referrals">Referrals</string>
+    <string name="dashboard_stat_credits">Credits</string>
+    <string name="dashboard_stat_bookings">Bookings</string>
+    <string name="dashboard_code_title">Your Referral Code</string>
+    <string name="dashboard_code_none">No active code yet. Generate one below.</string>
+    <string name="dashboard_code_redeemed">Redeemed %1$d time(s)</string>
+    <string name="dashboard_code_generate">Generate New Code</string>
+    <string name="dashboard_code_share_cd">Share referral code</string>
+    <string name="dashboard_referrals_title">Recent Referrals</string>
+    <string name="dashboard_referrals_empty">No referrals yet. Share your code to get started.</string>
+    <string name="dashboard_referral_joined">%1$s joined via your code</string>
+    <string name="dashboard_referral_credits">+%1$d credits awarded</string>
+    <string name="dashboard_bookings_title">Upcoming Bookings</string>
+    <string name="dashboard_bookings_empty">No upcoming bookings.</string>
+    <string name="dashboard_booking_new_cd">New booking</string>
+    <string name="dashboard_view_all">View All</string>
+
+    <!-- Calendar -->
+    <string name="calendar_title">Book Appointment</string>
+    <string name="calendar_step_date_time">Select Date &amp; Time</string>
+    <string name="calendar_step_code">Enter Referral Code (Optional)</string>
+    <string name="calendar_step_success">Booking Confirmed!</string>
+    <string name="calendar_next">Next</string>
+    <string name="calendar_back">Back</string>
+    <string name="calendar_confirm">Confirm Booking</string>
+    <string name="calendar_code_hint">Referral code</string>
+    <string name="calendar_skip_code">Skip</string>
+    <string name="calendar_success_message">Your appointment has been booked successfully.</string>
+    <string name="calendar_done">Done</string>
+
+    <!-- Codes screen -->
+    <string name="codes_title">My Codes</string>
+    <string name="codes_active">Active</string>
+    <string name="codes_expired">Expired</string>
+    <string name="codes_empty">No codes yet.</string>
+    <string name="codes_share_cd">Share this code</string>
+
+    <!-- Referrals screen -->
+    <string name="referrals_title">Referrals</string>
+    <string name="referrals_empty">No referrals yet. Share your code to earn credits.</string>
+    <string name="referrals_total_credits">Total credits earned: %1$d</string>
+
+    <!-- Errors -->
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_unauthorized">You are not authorized to perform this action.</string>
+    <string name="error_not_found">The requested item could not be found.</string>
+    <string name="error_rate_limit">Too many requests. Please try again later.</string>
+    <string name="error_code_already_redeemed">This referral code has already been redeemed.</string>
+    <string name="error_invalid_code">Invalid referral code.</string>
+    <string name="error_insufficient_credits">Insufficient loyalty credits.</string>
+    <string name="error_email_in_use">An account with this email already exists.</string>
+    <string name="error_weak_password">Password must be at least 8 characters.</string>
+    <string name="error_invalid_credentials">Invalid email or password.</string>
+    <string name="error_unknown">Something went wrong. Please try again.</string>
+</resources>
