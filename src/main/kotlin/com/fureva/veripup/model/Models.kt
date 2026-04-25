@@ -54,3 +54,21 @@ enum class VerifiedEventType {
     UPCOMING_LITTER_POLICY_ALLOWED,
     VET_CONFIRMED_DEPOSIT_UNLOCK
 }
+
+enum class OnboardingAgreementType {
+    GOOD_BREEDING_INTENTIONS,
+    HUMANE_CARE_STANDARDS,
+    ACCURATE_LISTING_DISCLOSURES,
+    PLATFORM_PAYMENT_AND_ADOPTION_RULES,
+    APP_TERMS_AND_PRIVACY_POLICY
+}
+
+data class BreederOnboardingSubmission(
+    val breederId: String,
+    val governmentIdUploaded: Boolean,
+    val photoHoldingGovernmentIdUploaded: Boolean,
+    val vetRecordsUploaded: Boolean,
+    val vetRecordsCoverBreedingDogs: Boolean,
+    val acceptedAgreements: Set<OnboardingAgreementType>,
+    val signedAt: Instant?
+)
