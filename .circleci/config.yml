@@ -1,0 +1,154 @@
+version: 2.1
+
+# ──────────────────────────────────────────────
+# Orbs
+# ──────────────────────────────────────────────
+orbs:
+  gradle: circleci/gradle@3.0.0
+
+# ──────────────────────────────────────────────
+# Reusable executor
+# ──────────────────────────────────────────────
+executors:
+  jvm:
+    docker:
+      - image: cimg/openjdk:17.0
+    resource_class: medium
+    environment:
+      GRADLE_OPTS: >-
+        -Dorg.gradle.daemon=false
+        -Dorg.gradle.parallel=true
+        -Dorg.gradle.caching=true
+        -Dkotlin.incremental=false
+        -Xmx2g -XX:+HeapDumpOnOutOfMemoryError
+
+# ──────────────────────────────────────────────
+# Cache key helpers
+# ──────────────────────────────────────────────
+# Gradle dependency cache is keyed on the build
+# script hash so it is only busted when deps change.
+# A fallback key ensures a warm (partial) cache is
+# used on the first build after a dependency change.
+
+jobs:
+
+  # ────────────────────────────────────────────
+  # build-and-test
+  # Compiles the project, runs the full test suite,
+  # and stores test results + artifacts.
+  # ────────────────────────────────────────────
+  build-and-test:
+    executor: jvm
+    steps:
+      - checkout
+
+      # Restore Gradle dependency cache
+      - restore_cache:
+          keys:
+            - gradle-deps-v2-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
+            - gradle-deps-v2-{{ checksum "build.gradle" }}-
+            - gradle-deps-v2-
+
+      # Restore Gradle build cache (incremental compilation outputs)
+      - restore_cache:
+          keys:
+            - gradle-build-v2-{{ .Branch }}-{{ .Revision }}
+            - gradle-build-v2-{{ .Branch }}-
+            - gradle-build-v2-
+
+      # Download dependencies without building (populates local cache)
+      - run:
+          name: Download dependencies
+          command: ./gradlew dependencies --no-daemon --quiet
+
+      # Compile + test in a single Gradle invocation to avoid
+      # starting the JVM twice and to share incremental state.
+      - run:
+          name: Build and test
+          command: >-
+            ./gradlew
+            classes testClasses test
+            --no-daemon
+            --build-cache
+            --parallel
+            --stacktrace
+
+      # Persist test XML results so CircleCI can surface them
+      # in the Insights / Test tab.
+      - store_test_results:
+          path: build/test-results
+
+      # Keep test reports and heap dumps as downloadable artifacts.
+      - store_artifacts:
+          path: build/reports/tests
+          destination: test-reports
+
+      - store_artifacts:
+          path: build/reports/problems
+          destination: problems-reports
+
+      # Save dependency cache (only changes when build.gradle changes)
+      - save_cache:
+          key: gradle-deps-v2-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
+          paths:
+            - ~/.gradle/caches
+            - ~/.gradle/wrapper
+
+      # Save build cache (branch-scoped for best reuse)
+      - save_cache:
+          key: gradle-build-v2-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - .gradle
+            - build
+
+  # ────────────────────────────────────────────
+  # lint (optional fast-feedback job)
+  # Runs Kotlin compiler checks only — no tests.
+  # Kept separate so it can be parallelised with
+  # other future jobs (e.g. security scanning).
+  # ────────────────────────────────────────────
+  lint:
+    executor: jvm
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - gradle-deps-v2-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
+            - gradle-deps-v2-{{ checksum "build.gradle" }}-
+            - gradle-deps-v2-
+
+      - restore_cache:
+          keys:
+            - gradle-build-v2-{{ .Branch }}-{{ .Revision }}
+            - gradle-build-v2-{{ .Branch }}-
+            - gradle-build-v2-
+
+      - run:
+          name: Compile (lint check)
+          command: >-
+            ./gradlew
+            compileKotlin compileTestKotlin
+            --no-daemon
+            --build-cache
+            --parallel
+
+# ──────────────────────────────────────────────
+# Workflow
+# ──────────────────────────────────────────────
+workflows:
+  ci:
+    jobs:
+      # Run lint first; if compilation fails there is no
+      # point spending executor-minutes on the test suite.
+      - lint:
+          filters:
+            branches:
+              ignore: []   # run on every branch
+
+      - build-and-test:
+          requires:
+            - lint
+          filters:
+            branches:
+              ignore: []
