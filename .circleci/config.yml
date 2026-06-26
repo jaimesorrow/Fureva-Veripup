@@ -1,0 +1,63 @@
+version: 2.1
+
+executors:
+  gradle-jdk17:
+    docker:
+      - image: gradle:8-jdk17
+    resource_class: medium
+    working_directory: ~/project
+    environment:
+      # Explicit home so cache paths are predictable regardless of image user
+      GRADLE_USER_HOME: /home/gradle/.gradle
+      # Disable daemon (no long-lived processes in CI), enable parallel execution
+      GRADLE_OPTS: >-
+        -Dorg.gradle.daemon=false
+        -Dorg.gradle.parallel=true
+        -Dkotlin.compiler.execution.strategy=in-process
+
+jobs:
+  build-and-test:
+    executor: gradle-jdk17
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            # Exact match on both build files — best cache hit
+            - gradle-deps-v1-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
+            # Fallback: build.gradle changed, accept older settings.gradle match
+            - gradle-deps-v1-{{ checksum "build.gradle" }}-
+            # Fallback: accept any prior cache to warm Gradle home
+            - gradle-deps-v1-
+
+      # Resolve all dependencies before save_cache so the cache is populated
+      # even when a later compile/test step fails.
+      - run:
+          name: Resolve dependencies
+          command: gradle dependencies --configuration testRuntimeClasspath
+
+      - save_cache:
+          paths:
+            - /home/gradle/.gradle/caches
+            - /home/gradle/.gradle/wrapper
+          key: gradle-deps-v1-{{ checksum "build.gradle" }}-{{ checksum "settings.gradle" }}
+
+      - run:
+          name: Compile
+          command: gradle classes testClasses
+
+      - run:
+          name: Test
+          command: gradle test
+
+      - store_test_results:
+          path: build/test-results
+
+      - store_artifacts:
+          path: build/reports/tests
+          destination: test-reports
+
+workflows:
+  ci:
+    jobs:
+      - build-and-test
