@@ -3,6 +3,7 @@ package com.fureva.veripup
 import com.fureva.veripup.integration.MockAkcVerificationProvider
 import com.fureva.veripup.integration.MockClinicVerificationProvider
 import com.fureva.veripup.integration.SmsGateway
+import com.fureva.veripup.model.AppealStatus
 import com.fureva.veripup.model.BreederOnboardingSubmission
 import com.fureva.veripup.model.BreederProfile
 import com.fureva.veripup.model.LitterRecord
@@ -103,7 +104,15 @@ class CoreFlowTests {
         val flagged = service.markOffPlatformViolation(profile, now)
 
         assertFalse(flagged.active)
-        assertTrue(service.isAdminDecisionOverdue(flagged, now.plusSeconds(91 * 24 * 3600L)))
+        // No appeal filed yet — overdue clock has not started
+        assertFalse(service.isAdminDecisionOverdue(flagged, now.plusSeconds(91 * 24 * 3600L)))
+
+        // Breeder files an appeal; now the 90-day clock starts
+        val withAppeal = flagged.copy(
+            appealStatus = AppealStatus.PENDING,
+            appealOpenedAt = now
+        )
+        assertTrue(service.isAdminDecisionOverdue(withAppeal, now.plusSeconds(91 * 24 * 3600L)))
     }
 
     @Test
