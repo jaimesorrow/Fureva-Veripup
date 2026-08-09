@@ -7,6 +7,10 @@ import kotlin.test.assertTrue
 
 class StateCityConfigTests {
 
+    companion object {
+        private val expectedAlaskaCities = listOf("Anchorage", "Fairbanks", "Juneau", "Bethel", "Utqiagvik")
+    }
+
     // ── citiesFor ─────────────────────────────────────────────────────────────
 
     @Test
@@ -22,10 +26,7 @@ class StateCityConfigTests {
 
     @Test
     fun alaskaCitiesMatchLargestCityPerRegionList() {
-        assertEquals(
-            listOf("Anchorage", "Fairbanks", "Juneau", "Bethel", "Utqiagvik"),
-            StateCityConfig.citiesFor("AK")
-        )
+        assertEquals(expectedAlaskaCities, StateCityConfig.citiesFor("AK"))
     }
 
     @Test
@@ -68,7 +69,7 @@ class StateCityConfigTests {
     @Test
     fun alaskaHasOneLargestCityPerRegion() {
         for ((state, cities) in StateCityConfig.topCitiesByState) {
-            assertEquals(5, cities.size, "State $state should have one city for each Alaska region")
+            assertEquals(expectedAlaskaCities.size, cities.size, "State $state should have one city for each Alaska region")
         }
     }
 }
