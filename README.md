@@ -4,7 +4,7 @@ Policy-focused Kotlin foundation for **Fureva VeriPup**, designed for Android + 
 
 ## Included in this codebase
 
-- Hard-coded `top 7 cities` map for all 50 U.S. states (`StateCityConfig`) used as canonical onboarding/search/filter source.
+- Hard-coded Alaska-only city map (`StateCityConfig`) used as canonical onboarding/search/filter source, with the largest city listed for each Alaska region.
 - Brand + messaging constants including required hero copy and palette tokens.
 - Core domain models for breeders, verification submissions, litters, alerts, and appeals.
 - Provider interfaces for external integrations (deepfake/liveness, clinic verification, AKC verification, SMS, payments).

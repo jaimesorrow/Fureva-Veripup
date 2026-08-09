@@ -21,13 +21,17 @@ class StateCityConfigTests {
     }
 
     @Test
-    fun citiesForCaliforniaContainsLosAngeles() {
-        assertTrue(StateCityConfig.citiesFor("CA").contains("Los Angeles"))
+    fun alaskaCitiesMatchLargestCityPerRegionList() {
+        assertEquals(
+            listOf("Anchorage", "Fairbanks", "Juneau", "Bethel", "Utqiagvik"),
+            StateCityConfig.citiesFor("AK")
+        )
     }
 
     @Test
-    fun citiesForTexasContainsHouston() {
-        assertTrue(StateCityConfig.citiesFor("TX").contains("Houston"))
+    fun nonAlaskaStatesReturnEmptyList() {
+        assertEquals(emptyList<String>(), StateCityConfig.citiesFor("CA"))
+        assertEquals(emptyList<String>(), StateCityConfig.citiesFor("TX"))
     }
 
     @Test
@@ -50,15 +54,8 @@ class StateCityConfigTests {
     // ── topCitiesByState coverage ─────────────────────────────────────────────
 
     @Test
-    fun allFiftyStatesArePresent() {
-        val expectedStateCodes = setOf(
-            "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
-            "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
-            "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
-            "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
-            "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
-        )
-        assertEquals(expectedStateCodes, StateCityConfig.topCitiesByState.keys)
+    fun onlyAlaskaIsPresent() {
+        assertEquals(setOf("AK"), StateCityConfig.topCitiesByState.keys)
     }
 
     @Test
@@ -69,9 +66,9 @@ class StateCityConfigTests {
     }
 
     @Test
-    fun eachStateHasAtLeastSevenCities() {
+    fun alaskaHasOneLargestCityPerRegion() {
         for ((state, cities) in StateCityConfig.topCitiesByState) {
-            assertTrue(cities.size >= 7, "State $state has fewer than 7 cities: ${cities.size}")
+            assertEquals(5, cities.size, "State $state should have one city for each Alaska region")
         }
     }
 }
