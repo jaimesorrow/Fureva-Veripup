@@ -68,7 +68,7 @@ class InMemoryVerificationReviewRepository : VerificationReviewRepository {
         records.values.flatten().firstOrNull { it.id == recordId }
 
     override fun findLatestByBreederId(breederId: String): VerificationReviewRecord? =
-        records[breederId]?.lastOrNull()
+        records[breederId]?.maxWithOrNull(compareBy<VerificationReviewRecord> { it.submittedAt }.thenBy { it.id })
 
     override fun findAll(): List<VerificationReviewRecord> =
         records.values

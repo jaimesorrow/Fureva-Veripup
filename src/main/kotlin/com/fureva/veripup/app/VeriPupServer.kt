@@ -67,7 +67,7 @@ private fun route(exchange: HttpExchange, workflow: VerificationWorkflowService)
         exchange.requestMethod == "POST" && path == "/breeders" ->
             createBreeder(exchange, workflow)
 
-        exchange.requestMethod == "GET" && path.startsWith("/breeders/") ->
+        exchange.requestMethod == "GET" && path.startsWith("/breeders/") && path.count { it == '/' } == 2 ->
             showBreeder(exchange, workflow, path.removePrefix("/breeders/"))
 
         exchange.requestMethod == "POST" && path.startsWith("/breeders/") && path.endsWith("/onboarding") ->
@@ -80,15 +80,15 @@ private fun route(exchange: HttpExchange, workflow: VerificationWorkflowService)
             sendHtml(exchange, renderAdminQueuePage(workflow))
 
         exchange.requestMethod == "POST" && path.startsWith("/admin/verifications/") && path.endsWith("/approve") ->
-            reviewVerification(exchange, workflow, path.removePrefix("/admin/verifications/").removeSuffix("/approve"), true)
+            reviewVerification(exchange, workflow, extractActionId(path, "/admin/verifications/", "/approve"), true)
 
         exchange.requestMethod == "POST" && path.startsWith("/admin/verifications/") && path.endsWith("/reject") ->
-            reviewVerification(exchange, workflow, path.removePrefix("/admin/verifications/").removeSuffix("/reject"), false)
+            reviewVerification(exchange, workflow, extractActionId(path, "/admin/verifications/", "/reject"), false)
 
         exchange.requestMethod == "GET" && path == "/api/breeders" ->
             sendJson(exchange, breedersJson(workflow))
 
-        exchange.requestMethod == "GET" && path.startsWith("/api/breeders/") ->
+        exchange.requestMethod == "GET" && path.startsWith("/api/breeders/") && path.count { it == '/' } == 3 ->
             sendJson(exchange, breederSnapshotJson(workflow, path.removePrefix("/api/breeders/")))
 
         exchange.requestMethod == "GET" && path == "/api/verifications/queue" ->
@@ -428,6 +428,12 @@ private fun redirect(exchange: HttpExchange, location: String) {
     exchange.responseHeaders.add("Location", location)
     exchange.sendResponseHeaders(302, -1)
     exchange.close()
+}
+
+private fun extractActionId(path: String, prefix: String, suffix: String): String {
+    val extracted = path.removePrefix(prefix).removeSuffix(suffix)
+    require(extracted.isNotBlank() && !extracted.contains('/')) { "Invalid action target." }
+    return extracted
 }
 
 private fun json(value: String): String =

@@ -11,7 +11,7 @@ import java.util.UUID
 
 class WorkflowNotFoundException(message: String) : IllegalArgumentException(message)
 
-private val breederIdPattern = Regex("[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?")
+private val breederIdPattern = Regex("[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*")
 
 class VerificationWorkflowService(
     private val breederProfiles: BreederProfileRepository,

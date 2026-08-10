@@ -186,6 +186,24 @@ class VerificationWorkflowServiceTests {
     }
 
     @Test
+    fun breederIdCannotContainConsecutiveHyphens() {
+        val workflow = workflow()
+
+        val error = assertFailsWith<IllegalArgumentException> {
+            workflow.registerBreeder(
+                BreederProfile(
+                    id = "a--b",
+                    name = "Invalid",
+                    stateCode = "AK",
+                    city = "Anchorage"
+                )
+            )
+        }
+
+        assertTrue(error.message!!.contains("Breeder ID"))
+    }
+
+    @Test
     fun rejectedResubmissionDoesNotRemoveExistingVerifiedStatus() {
         val workflow = workflow()
         registerBreeder(workflow)
