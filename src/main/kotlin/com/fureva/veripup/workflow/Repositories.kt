@@ -17,6 +17,7 @@ interface BreederOnboardingRepository {
 
 interface VerificationReviewRepository {
     fun save(record: VerificationReviewRecord): VerificationReviewRecord
+    fun findByRecordId(recordId: String): VerificationReviewRecord?
     fun findLatestByBreederId(breederId: String): VerificationReviewRecord?
     fun findAll(): List<VerificationReviewRecord>
     fun findPendingReview(): List<VerificationReviewRecord>
@@ -63,8 +64,11 @@ class InMemoryVerificationReviewRepository : VerificationReviewRepository {
         return record
     }
 
+    override fun findByRecordId(recordId: String): VerificationReviewRecord? =
+        records.values.flatten().firstOrNull { it.id == recordId }
+
     override fun findLatestByBreederId(breederId: String): VerificationReviewRecord? =
-        records[breederId]?.maxByOrNull { it.submittedAt }
+        records[breederId]?.lastOrNull()
 
     override fun findAll(): List<VerificationReviewRecord> =
         records.values

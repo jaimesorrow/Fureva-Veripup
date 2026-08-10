@@ -11,6 +11,8 @@ import java.util.UUID
 
 class WorkflowNotFoundException(message: String) : IllegalArgumentException(message)
 
+private val breederIdPattern = Regex("[A-Za-z0-9-]+")
+
 class VerificationWorkflowService(
     private val breederProfiles: BreederProfileRepository,
     private val onboardingSubmissions: BreederOnboardingRepository,
@@ -20,7 +22,7 @@ class VerificationWorkflowService(
     private val clock: Clock = Clock.systemUTC()
 ) {
     fun registerBreeder(profile: BreederProfile): BreederProfile {
-        require(profile.id.matches(Regex("[A-Za-z0-9-]+"))) {
+        require(profile.id.matches(breederIdPattern)) {
             "Breeder ID may only contain letters, numbers, and hyphens."
         }
         breederProfiles.save(profile)
@@ -104,11 +106,11 @@ class VerificationWorkflowService(
         )
     }
 
-    fun reviewVerification(breederId: String, approved: Boolean, reviewNotes: String? = null): VerificationReviewRecord {
-        val existing = verificationReviews.findLatestByBreederId(breederId)
-            ?: throw WorkflowNotFoundException("No verification record found for breeder '$breederId'.")
+    fun reviewVerification(recordId: String, approved: Boolean, reviewNotes: String? = null): VerificationReviewRecord {
+        val existing = verificationReviews.findByRecordId(recordId)
+            ?: throw WorkflowNotFoundException("No verification record found for record '$recordId'.")
         if (existing.status != VerificationReviewStatus.READY_FOR_ADMIN_REVIEW) {
-            throw IllegalArgumentException("Verification record for breeder '$breederId' is not pending admin review.")
+            throw IllegalArgumentException("Verification record '$recordId' is not pending admin review.")
         }
 
         val resolvedStatus = if (approved && existing.policyApproved) {
@@ -132,7 +134,7 @@ class VerificationWorkflowService(
         )
         verificationReviews.save(updated)
 
-        val breeder = requireBreeder(breederId)
+        val breeder = requireBreeder(existing.breederId)
         breederProfiles.save(
             breeder.copy(verifiedStatus = updated.status == VerificationReviewStatus.APPROVED)
         )

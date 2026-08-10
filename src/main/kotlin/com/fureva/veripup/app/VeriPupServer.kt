@@ -155,12 +155,12 @@ private fun submitVerification(exchange: HttpExchange, workflow: VerificationWor
 private fun reviewVerification(
     exchange: HttpExchange,
     workflow: VerificationWorkflowService,
-    breederId: String,
+    recordId: String,
     approved: Boolean
 ) {
     val form = parseFormBody(exchange)
     workflow.reviewVerification(
-        breederId = breederId,
+        recordId = recordId,
         approved = approved,
         reviewNotes = form.optional("reviewNotes")
     )
@@ -290,11 +290,11 @@ private fun renderAdminQueuePage(workflow: VerificationWorkflowService): String 
             """
             <li>
                 <strong>${html(record.breederId)}</strong> submitted ${html(record.submittedAt.toString())}
-                <form method="post" action="/admin/verifications/${html(record.breederId)}/approve">
+                <form method="post" action="/admin/verifications/${html(record.id)}/approve">
                     <input name="reviewNotes" placeholder="Approval notes" />
                     <button type="submit">Approve</button>
                 </form>
-                <form method="post" action="/admin/verifications/${html(record.breederId)}/reject">
+                <form method="post" action="/admin/verifications/${html(record.id)}/reject">
                     <input name="reviewNotes" placeholder="Rejection notes" />
                     <button type="submit">Reject</button>
                 </form>

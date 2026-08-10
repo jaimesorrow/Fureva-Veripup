@@ -117,8 +117,9 @@ class VerificationWorkflowServiceTests {
         registerBreeder(workflow)
         workflow.submitOnboarding(completeOnboarding())
         workflow.submitVerification(validVerification())
+        val pendingRecord = workflow.listVerificationQueue().single()
 
-        val reviewed = workflow.reviewVerification("b1", approved = true, reviewNotes = "Looks good")
+        val reviewed = workflow.reviewVerification(pendingRecord.id, approved = true, reviewNotes = "Looks good")
 
         assertEquals(VerificationReviewStatus.APPROVED, reviewed.status)
         assertTrue(workflow.getBreeder("b1")!!.verifiedStatus)
