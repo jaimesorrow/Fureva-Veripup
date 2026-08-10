@@ -13,8 +13,8 @@ import com.fureva.veripup.workflow.InMemoryBreederOnboardingRepository
 import com.fureva.veripup.workflow.InMemoryBreederProfileRepository
 import com.fureva.veripup.workflow.InMemoryVerificationReviewRepository
 import com.fureva.veripup.workflow.VerificationReviewRecord
-import com.fureva.veripup.workflow.VerificationReviewStatus
 import com.fureva.veripup.workflow.VerificationWorkflowService
+import com.fureva.veripup.workflow.WorkflowNotFoundException
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
 import java.net.InetSocketAddress
@@ -45,7 +45,14 @@ fun createServer(port: Int): HttpServer {
     server.createContext("/") { exchange ->
         runCatching { route(exchange, workflow) }
             .onFailure { error ->
-                sendText(exchange, error.message ?: "Unexpected error", 400, "text/plain; charset=utf-8")
+                when (error) {
+                    is WorkflowNotFoundException ->
+                        sendText(exchange, error.message ?: "Not found", 404, "text/plain; charset=utf-8")
+                    is IllegalArgumentException ->
+                        sendText(exchange, error.message ?: "Bad request", 400, "text/plain; charset=utf-8")
+                    else ->
+                        sendText(exchange, error.message ?: "Unexpected error", 500, "text/plain; charset=utf-8")
+                }
             }
     }
     return server
@@ -336,16 +343,27 @@ private fun breederSnapshotJson(workflow: VerificationWorkflowService, breederId
     val snapshot = workflow.getWorkflowSnapshot(breederId)
         ?: return """{"error":"Breeder not found"}"""
 
-    val onboardingStatus = snapshot.onboardingStatus?.let {
+    val fields = mutableListOf(
         """
-        "onboardingStatus": {
-          "readyForVerification": ${it.readyForVerification},
-          "missingRequirements": ${it.missingRequirements.joinToJsonArray(::json)}
-        },
+        "profile": {
+          "id": ${json(snapshot.profile.id)},
+          "name": ${json(snapshot.profile.name)},
+          "stateCode": ${json(snapshot.profile.stateCode)},
+          "city": ${json(snapshot.profile.city)},
+          "verifiedStatus": ${snapshot.profile.verifiedStatus}
+        }
         """.trimIndent()
-    } ?: ""
-
-    val verificationRecord = snapshot.verificationRecord?.let {
+    )
+    snapshot.onboardingStatus?.let {
+        fields +=
+            """
+            "onboardingStatus": {
+              "readyForVerification": ${it.readyForVerification},
+              "missingRequirements": ${it.missingRequirements.joinToJsonArray(::json)}
+            }
+            """.trimIndent()
+    }
+    fields += snapshot.verificationRecord?.let {
         """
         "verificationRecord": {
           "status": ${json(it.status.name)},
@@ -359,15 +377,7 @@ private fun breederSnapshotJson(workflow: VerificationWorkflowService, breederId
 
     return """
         {
-          "profile": {
-            "id": ${json(snapshot.profile.id)},
-            "name": ${json(snapshot.profile.name)},
-            "stateCode": ${json(snapshot.profile.stateCode)},
-            "city": ${json(snapshot.profile.city)},
-            "verifiedStatus": ${snapshot.profile.verifiedStatus}
-          },
-          $onboardingStatus
-          $verificationRecord
+          ${fields.joinToString(",\n  ")}
         }
     """.trimIndent()
 }
@@ -417,11 +427,6 @@ private fun redirect(exchange: HttpExchange, location: String) {
     exchange.sendResponseHeaders(302, -1)
     exchange.close()
 }
-
-private fun String.removeSuffix(value: String): String =
-    if (endsWith(value) && value.isNotEmpty()) dropLast(value.length) else this
-
-private fun String.ifBlank(fallback: () -> String): String = if (isBlank()) fallback() else this
 
 private fun json(value: String): String =
     buildString {

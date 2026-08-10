@@ -8,6 +8,8 @@ import com.fureva.veripup.service.VerificationService
 import java.time.Clock
 import java.time.Instant
 
+class WorkflowNotFoundException(message: String) : IllegalArgumentException(message)
+
 class VerificationWorkflowService(
     private val breederProfiles: BreederProfileRepository,
     private val onboardingSubmissions: BreederOnboardingRepository,
@@ -95,7 +97,7 @@ class VerificationWorkflowService(
 
     fun reviewVerification(breederId: String, approved: Boolean, reviewNotes: String? = null): VerificationReviewRecord {
         val existing = verificationReviews.findByBreederId(breederId)
-            ?: throw IllegalArgumentException("No verification record found for breeder '$breederId'.")
+            ?: throw WorkflowNotFoundException("No verification record found for breeder '$breederId'.")
         if (existing.status != VerificationReviewStatus.READY_FOR_ADMIN_REVIEW) {
             throw IllegalArgumentException("Verification record for breeder '$breederId' is not pending admin review.")
         }
@@ -161,7 +163,7 @@ class VerificationWorkflowService(
 
     private fun requireBreeder(breederId: String): BreederProfile =
         breederProfiles.findById(breederId)
-            ?: throw IllegalArgumentException("Breeder '$breederId' has not been registered.")
+            ?: throw WorkflowNotFoundException("Breeder '$breederId' has not been registered.")
 
     private fun now(): Instant = Instant.now(clock)
 }

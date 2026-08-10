@@ -21,8 +21,8 @@ Policy-focused Kotlin foundation for **Fureva VeriPup**, designed for Android + 
 ## Quick start
 
 ```bash
-gradle test
-gradle run
+./gradlew test
+./gradlew run
 ```
 
 ## Notes
