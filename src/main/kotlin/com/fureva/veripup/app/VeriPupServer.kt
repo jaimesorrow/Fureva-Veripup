@@ -366,6 +366,7 @@ private fun breederSnapshotJson(workflow: VerificationWorkflowService, breederId
     fields += snapshot.verificationRecord?.let {
         """
         "verificationRecord": {
+          "id": ${json(it.id)},
           "status": ${json(it.status.name)},
           "policyApproved": ${it.policyApproved},
           "submittedAt": ${json(it.submittedAt.toString())},
@@ -386,6 +387,7 @@ private fun queueJson(records: List<VerificationReviewRecord>): String =
     records.joinToJsonArray { record ->
         """
         {
+          "id": ${json(record.id)},
           "breederId": ${json(record.breederId)},
           "status": ${json(record.status.name)},
           "policyApproved": ${record.policyApproved},

@@ -7,6 +7,7 @@ import com.fureva.veripup.service.BreederOnboardingService
 import com.fureva.veripup.service.VerificationService
 import java.time.Clock
 import java.time.Instant
+import java.util.UUID
 
 class WorkflowNotFoundException(message: String) : IllegalArgumentException(message)
 
@@ -61,6 +62,7 @@ class VerificationWorkflowService(
 
         val policyApproved = verificationService.approve(submission)
         val record = VerificationReviewRecord(
+            id = UUID.randomUUID().toString(),
             breederId = submission.breederId,
             submission = submission,
             policyApproved = policyApproved,
@@ -144,6 +146,7 @@ class VerificationWorkflowService(
     ): VerificationSubmissionOutcome {
         verificationReviews.save(
             VerificationReviewRecord(
+                id = UUID.randomUUID().toString(),
                 breederId = submission.breederId,
                 submission = submission,
                 policyApproved = false,

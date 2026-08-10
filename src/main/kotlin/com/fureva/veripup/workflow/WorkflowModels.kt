@@ -18,6 +18,7 @@ data class OnboardingStatus(
 )
 
 data class VerificationReviewRecord(
+    val id: String,
     val breederId: String,
     val submission: VerificationSubmission,
     val policyApproved: Boolean,

@@ -52,7 +52,7 @@ class InMemoryVerificationReviewRepository : VerificationReviewRepository {
     override fun save(record: VerificationReviewRecord): VerificationReviewRecord {
         records.compute(record.breederId) { _, existing ->
             val storedRecords = existing ?: mutableListOf()
-            val currentIndex = storedRecords.indexOfFirst { it.submittedAt == record.submittedAt }
+            val currentIndex = storedRecords.indexOfFirst { it.id == record.id }
             if (currentIndex >= 0) {
                 storedRecords[currentIndex] = record
             } else {
