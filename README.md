@@ -21,7 +21,8 @@ Policy-focused Kotlin foundation for **Fureva VeriPup**, designed for Android + 
 ## Quick start
 
 ```bash
-./gradlew test
+gradle test
+gradle run
 ```
 
 ## Notes
@@ -29,6 +30,13 @@ Policy-focused Kotlin foundation for **Fureva VeriPup**, designed for Android + 
 - This repository intentionally keeps external integrations as interfaces so production providers can be swapped in later.
 - Weekly reminder orchestration, payment processor settlement specifics, and document storage are represented at policy/service layer and can be wired into mobile/API apps.
 - Use "VeriPup Verified breeders" or "verified breeders" wording in UI copy.
+- The runnable application layer now includes an in-memory breeder onboarding and verification workflow demo with:
+  - breeder registration,
+  - onboarding submission and readiness checks,
+  - verification submission and policy gating,
+  - admin review queue,
+  - simple HTML pages plus JSON endpoints under `/api/*`.
+- The demo server uses in-memory persistence and mock providers, so data resets on restart.
 
 ## Credibility & Attribution
 

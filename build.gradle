@@ -1,5 +1,6 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '2.0.21'
+    id 'application'
 }
 
 group = 'com.fureva.veripup'
@@ -19,4 +20,8 @@ test {
 
 kotlin {
     jvmToolchain(17)
+}
+
+application {
+    mainClass = 'com.fureva.veripup.app.VeriPupServerKt'
 }
