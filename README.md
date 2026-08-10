@@ -38,6 +38,7 @@ Policy-focused Kotlin foundation for **Fureva VeriPup**, designed for Android + 
   - simple HTML pages plus JSON endpoints under `/api/*`.
 - The workflow preserves verification history in memory while allowing only one pending admin review per breeder at a time.
 - The demo server uses in-memory persistence and mock providers, so data resets on restart.
+- The demo server is built on the JDK `HttpServer` for a lightweight runnable sample, which is appropriate for this prototype but not intended as the final production transport layer.
 
 ## Credibility & Attribution
 

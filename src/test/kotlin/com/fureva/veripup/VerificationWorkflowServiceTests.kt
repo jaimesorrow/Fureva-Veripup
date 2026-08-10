@@ -184,4 +184,21 @@ class VerificationWorkflowServiceTests {
 
         assertTrue(error.message!!.contains("Breeder ID"))
     }
+
+    @Test
+    fun rejectedResubmissionDoesNotRemoveExistingVerifiedStatus() {
+        val workflow = workflow()
+        registerBreeder(workflow)
+        workflow.submitOnboarding(completeOnboarding())
+
+        workflow.submitVerification(validVerification())
+        val approvedRecord = workflow.listVerificationQueue().single()
+        workflow.reviewVerification(approvedRecord.id, approved = true)
+
+        workflow.submitVerification(validVerification(akc = null))
+        val pendingRecord = workflow.listVerificationQueue().single()
+        workflow.reviewVerification(pendingRecord.id, approved = false)
+
+        assertTrue(workflow.getBreeder("b1")!!.verifiedStatus)
+    }
 }
