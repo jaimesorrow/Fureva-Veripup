@@ -166,4 +166,22 @@ class VerificationWorkflowServiceTests {
         assertEquals(2, workflow.listVerificationRecords().size)
         assertEquals(VerificationReviewStatus.READY_FOR_ADMIN_REVIEW, workflow.listVerificationQueue().single().status)
     }
+
+    @Test
+    fun breederIdMustContainAnAlphanumericCharacter() {
+        val workflow = workflow()
+
+        val error = assertFailsWith<IllegalArgumentException> {
+            workflow.registerBreeder(
+                BreederProfile(
+                    id = "---",
+                    name = "Invalid",
+                    stateCode = "AK",
+                    city = "Anchorage"
+                )
+            )
+        }
+
+        assertTrue(error.message!!.contains("Breeder ID"))
+    }
 }

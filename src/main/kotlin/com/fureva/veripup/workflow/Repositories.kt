@@ -3,6 +3,7 @@ package com.fureva.veripup.workflow
 import com.fureva.veripup.model.BreederOnboardingSubmission
 import com.fureva.veripup.model.BreederProfile
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 
 interface BreederProfileRepository {
     fun save(profile: BreederProfile): BreederProfile
@@ -48,11 +49,11 @@ class InMemoryBreederOnboardingRepository : BreederOnboardingRepository {
 }
 
 class InMemoryVerificationReviewRepository : VerificationReviewRepository {
-    private val records = ConcurrentHashMap<String, MutableList<VerificationReviewRecord>>()
+    private val records = ConcurrentHashMap<String, CopyOnWriteArrayList<VerificationReviewRecord>>()
 
     override fun save(record: VerificationReviewRecord): VerificationReviewRecord {
         records.compute(record.breederId) { _, existing ->
-            val storedRecords = existing ?: mutableListOf()
+            val storedRecords = existing ?: CopyOnWriteArrayList()
             val currentIndex = storedRecords.indexOfFirst { it.id == record.id }
             if (currentIndex >= 0) {
                 storedRecords[currentIndex] = record
