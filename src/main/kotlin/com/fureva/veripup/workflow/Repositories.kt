@@ -17,7 +17,7 @@ interface BreederOnboardingRepository {
 
 interface VerificationReviewRepository {
     fun save(record: VerificationReviewRecord): VerificationReviewRecord
-    fun findByBreederId(breederId: String): VerificationReviewRecord?
+    fun findLatestByBreederId(breederId: String): VerificationReviewRecord?
     fun findAll(): List<VerificationReviewRecord>
     fun findPendingReview(): List<VerificationReviewRecord>
 }
@@ -47,17 +47,29 @@ class InMemoryBreederOnboardingRepository : BreederOnboardingRepository {
 }
 
 class InMemoryVerificationReviewRepository : VerificationReviewRepository {
-    private val records = ConcurrentHashMap<String, VerificationReviewRecord>()
+    private val records = ConcurrentHashMap<String, MutableList<VerificationReviewRecord>>()
 
     override fun save(record: VerificationReviewRecord): VerificationReviewRecord {
-        records[record.breederId] = record
+        records.compute(record.breederId) { _, existing ->
+            val storedRecords = existing ?: mutableListOf()
+            val currentIndex = storedRecords.indexOfFirst { it.submittedAt == record.submittedAt }
+            if (currentIndex >= 0) {
+                storedRecords[currentIndex] = record
+            } else {
+                storedRecords += record
+            }
+            storedRecords
+        }
         return record
     }
 
-    override fun findByBreederId(breederId: String): VerificationReviewRecord? = records[breederId]
+    override fun findLatestByBreederId(breederId: String): VerificationReviewRecord? =
+        records[breederId]?.maxByOrNull { it.submittedAt }
 
     override fun findAll(): List<VerificationReviewRecord> =
-        records.values.sortedByDescending { it.submittedAt }
+        records.values
+            .flatten()
+            .sortedByDescending { it.submittedAt }
 
     override fun findPendingReview(): List<VerificationReviewRecord> =
         findAll().filter { it.status == VerificationReviewStatus.READY_FOR_ADMIN_REVIEW }

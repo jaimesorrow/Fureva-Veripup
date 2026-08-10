@@ -17,6 +17,7 @@ import java.time.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class VerificationWorkflowServiceTests {
@@ -135,5 +136,33 @@ class VerificationWorkflowServiceTests {
         assertEquals(VerificationReviewStatus.REJECTED, outcome.status)
         assertTrue(workflow.listVerificationQueue().isEmpty())
         assertFalse(workflow.getBreeder("b1")!!.verifiedStatus)
+    }
+
+    @Test
+    fun duplicatePendingVerificationIsRejectedUntilReviewed() {
+        val workflow = workflow()
+        registerBreeder(workflow)
+        workflow.submitOnboarding(completeOnboarding())
+        workflow.submitVerification(validVerification())
+
+        val error = assertFailsWith<IllegalArgumentException> {
+            workflow.submitVerification(validVerification(akc = null))
+        }
+
+        assertTrue(error.message!!.contains("already pending"))
+        assertEquals(1, workflow.listVerificationRecords().size)
+    }
+
+    @Test
+    fun rejectedSubmissionHistoryIsPreservedAcrossResubmission() {
+        val workflow = workflow()
+        registerBreeder(workflow)
+        workflow.submitOnboarding(completeOnboarding())
+
+        workflow.submitVerification(validVerification(akc = "BAD-123"))
+        workflow.submitVerification(validVerification(akc = "AKC-77777"))
+
+        assertEquals(2, workflow.listVerificationRecords().size)
+        assertEquals(VerificationReviewStatus.READY_FOR_ADMIN_REVIEW, workflow.listVerificationQueue().single().status)
     }
 }

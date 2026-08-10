@@ -19,6 +19,9 @@ class VerificationWorkflowService(
     private val clock: Clock = Clock.systemUTC()
 ) {
     fun registerBreeder(profile: BreederProfile): BreederProfile {
+        require(profile.id.matches(Regex("[A-Za-z0-9-]+"))) {
+            "Breeder ID may only contain letters, numbers, and hyphens."
+        }
         breederProfiles.save(profile)
         return profile
     }
@@ -50,6 +53,10 @@ class VerificationWorkflowService(
                 submission = submission,
                 message = "Onboarding is incomplete: ${onboardingStatus.missingRequirements.joinToString()}"
             )
+        }
+        val latestRecord = verificationReviews.findLatestByBreederId(submission.breederId)
+        require(latestRecord?.status != VerificationReviewStatus.READY_FOR_ADMIN_REVIEW) {
+            "A verification review is already pending for breeder '${submission.breederId}'."
         }
 
         val policyApproved = verificationService.approve(submission)
@@ -91,12 +98,12 @@ class VerificationWorkflowService(
             profile = profile,
             onboardingSubmission = onboardingSubmission,
             onboardingStatus = onboardingSubmission?.let(::evaluateOnboarding),
-            verificationRecord = verificationReviews.findByBreederId(breederId)
+            verificationRecord = verificationReviews.findLatestByBreederId(breederId)
         )
     }
 
     fun reviewVerification(breederId: String, approved: Boolean, reviewNotes: String? = null): VerificationReviewRecord {
-        val existing = verificationReviews.findByBreederId(breederId)
+        val existing = verificationReviews.findLatestByBreederId(breederId)
             ?: throw WorkflowNotFoundException("No verification record found for breeder '$breederId'.")
         if (existing.status != VerificationReviewStatus.READY_FOR_ADMIN_REVIEW) {
             throw IllegalArgumentException("Verification record for breeder '$breederId' is not pending admin review.")
