@@ -21,7 +21,23 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
+/**
+ * Integration-style tests that exercise the core business flows end-to-end
+ * using in-memory mock providers.
+ *
+ * Each test corresponds to one key user or admin journey:
+ * - Breeder verification gating (AKC number validation)
+ * - Breeder onboarding completeness checks
+ * - Litter inventory deposit / adoption caps
+ * - Enforcement deactivation and appeal overdue detection
+ * - SMS alert opt-in and verified-event gating
+ */
 class CoreFlowTests {
+    /**
+     * Verifies that a verification submission is rejected when an invalid AKC
+     * member number is supplied. All other required fields are valid; only the
+     * AKC number (`"BAD-123"`) fails the [MockAkcVerificationProvider] check.
+     */
     @Test
     fun verificationGatingFailsOnBadAkc() {
         val service = VerificationService(MockClinicVerificationProvider(), MockAkcVerificationProvider())
@@ -43,6 +59,12 @@ class CoreFlowTests {
         assertFalse(approved)
     }
 
+    /**
+     * Confirms that a fully completed [BreederOnboardingSubmission] — with all
+     * five agreements accepted, both ID documents uploaded, vet records uploaded
+     * and covering breeding dogs, and a valid signature timestamp — is marked
+     * ready for verification with no missing requirements.
+     */
     @Test
     fun onboardingRequiresIdentityVetRecordsAndAllAgreements() {
         val service = BreederOnboardingService()
@@ -60,6 +82,12 @@ class CoreFlowTests {
         assertTrue(service.missingRequirements(submission).isEmpty())
     }
 
+    /**
+     * Confirms that [BreederOnboardingService.missingRequirements] returns the
+     * correct count of unmet requirements (8) when a submission is missing the
+     * photo ID upload, vet records, the onboarding signature, and four of the
+     * five required agreements.
+     */
     @Test
     fun onboardingReturnsMissingRequirementsWhenIncomplete() {
         val service = BreederOnboardingService()
@@ -77,6 +105,14 @@ class CoreFlowTests {
         assertEquals(8, service.missingRequirements(submission).size)
     }
 
+    /**
+     * Verifies [InventoryService] inventory rules for a litter with 3 expected
+     * puppies, 3 reserved deposits, and 1 completed adoption:
+     * - No further deposits may be accepted (all remaining slots are deposited).
+     * - An adoption can still be completed (deposits > completedAdoptions).
+     * - Public availability is capped at 2 (3 expected − 1 adopted), even
+     *   though the breeder listed 5.
+     */
     @Test
     fun inventoryCapsDepositsAndAdoptions() {
         val inventory = InventoryService()
@@ -95,6 +131,13 @@ class CoreFlowTests {
         assertEquals(2, inventory.cappedAvailability(record))
     }
 
+    /**
+     * Verifies the enforcement lifecycle:
+     * 1. [EnforcementService.markOffPlatformViolation] deactivates the account
+     *    immediately.
+     * 2. [EnforcementService.isAdminDecisionOverdue] returns `true` when the
+     *    appeal has been open for more than 90 days (tested at 91 days).
+     */
     @Test
     fun offPlatformEnforcementAndAppealTiming() {
         val service = EnforcementService()
@@ -106,6 +149,13 @@ class CoreFlowTests {
         assertTrue(service.isAdminDecisionOverdue(flagged, now.plusSeconds(91 * 24 * 3600L)))
     }
 
+    /**
+     * Verifies the two SMS alert guards:
+     * 1. [AlertsService.canTriggerEvent] returns `true` for [VerifiedEventType.NEW_PUPS_POSTED]
+     *    when the breeder is verified.
+     * 2. [AlertsService.sendVerifiedUpdate] delivers exactly one SMS (prefixed
+     *    with `"Verified Update:"`) when the user has opted in.
+     */
     @Test
     fun alertsOnlySendForOptInAndVerifiedEvents() {
         val sent = mutableListOf<String>()

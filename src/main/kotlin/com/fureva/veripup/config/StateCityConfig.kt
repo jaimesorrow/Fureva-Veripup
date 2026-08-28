@@ -1,6 +1,22 @@
 package com.fureva.veripup.config
 
+/**
+ * Static geographic reference data used to populate state and city selectors
+ * throughout the breeder onboarding and profile flows.
+ *
+ * Covers all 50 US states. Each state maps to a curated list of its seven
+ * most populous cities, giving users meaningful location options without
+ * requiring a full address database.
+ */
 object StateCityConfig {
+    /**
+     * A mapping from two-letter US state codes (upper-case) to an ordered list
+     * of the state's top cities by population.
+     *
+     * Keys are standard USPS state abbreviations (e.g. `"AK"`, `"CA"`).
+     * Values are lists of city names ordered roughly by population size,
+     * largest first.
+     */
     val topCitiesByState: Map<String, List<String>> = mapOf(
         "AL" to listOf("Huntsville", "Birmingham", "Montgomery", "Mobile", "Tuscaloosa", "Hoover", "Dothan"),
         "AK" to listOf("Anchorage", "Fairbanks", "Juneau", "Badger", "Knik-Fairview", "College", "Wasilla"),
@@ -54,5 +70,14 @@ object StateCityConfig {
         "WY" to listOf("Cheyenne", "Casper", "Laramie", "Gillette", "Rock Springs", "Sheridan", "Evanston")
     )
 
+    /**
+     * Returns the list of supported cities for the given US state code.
+     *
+     * The lookup is case-insensitive — `"ak"` and `"AK"` both work.
+     *
+     * @param stateCode Two-letter US state abbreviation (e.g. `"AK"`).
+     * @return The ordered list of cities for the state, or an empty list if
+     *   the state code is not recognised.
+     */
     fun citiesFor(stateCode: String): List<String> = topCitiesByState[stateCode.uppercase()] ?: emptyList()
 }
