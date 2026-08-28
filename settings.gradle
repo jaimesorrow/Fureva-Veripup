@@ -1,1 +1,12 @@
+plugins {
+    // build.gradle pins jvmToolchain(17). Without a toolchain resolver, Gradle can
+    // only use a JDK 17 that already happens to be installed, so the build fails on
+    // any machine or CI runner that has a different JDK:
+    //   Cannot find a Java installation ... {languageVersion=17}
+    //   > No locally installed toolchains match and toolchain download repositories
+    //     have not been configured.
+    // This lets Gradle provision the pinned JDK itself.
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+
 rootProject.name = 'fureva-veripup'
