@@ -35,8 +35,8 @@ class EnforcementService {
         return profile.copy(
             active = false,
             deactivatedAt = now,
-            appealStatus = AppealStatus.PENDING,
-            appealOpenedAt = now
+            appealStatus = AppealStatus.NONE,
+            appealOpenedAt = null
         )
     }
 

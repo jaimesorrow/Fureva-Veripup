@@ -24,8 +24,8 @@ class InventoryService {
      */
     fun canAcceptDeposit(record: LitterRecord): Boolean {
         if (!record.verifiedByVet || !record.dueDateConfirmed) return false
-        val maxDeposits = record.expectedLitterCount - record.completedAdoptions
-        return record.reservedDeposits < maxDeposits
+        val maxDeposits = record.expectedLitterCount - record.completedAdoptions - record.reservedDeposits
+        return maxDeposits > 0
     }
 
     /**
